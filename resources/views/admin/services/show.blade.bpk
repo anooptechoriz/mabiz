@@ -1,0 +1,502 @@
+@extends('layouts.admin.index')
+
+@section('content')
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">{{ __('messages.service') }}</h1>
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <a class="btn btn-primary btn-circle btn-lg" href="{{ route('admin.services') }}" title="{{ __('messages.Back to customers') }}"> <i class="fa fa-arrow-left" aria-hidden="true"></i></a>
+            <div class="row">
+                <div class="container">
+                    <div class="wrapper row">
+                        <div class="preview col-md-6">
+                            <div class="preview-pic tab-content">
+                                
+                                
+                                
+                                
+                                @if ($serviceDetails->image != '')
+                                <img src="{{ asset('/assets/uploads/service/') }}/{{ $serviceDetails->image }}" alt="Service Image" width="150px" class="tab-pane active image_display" id="product_pic" />
+                                @else
+                                <img src="{{ asset('img/no-image.jpg') }}" alt="profile image" />
+                                @endif
+                            </div>
+                        </div>
+                        <div class="details col-md-6">
+                            <h3 class="product-title">{{ $serviceDetails->service }}</h3>
+                            <div><span>{{__('messages.parent service')}}: {{ ($serviceDetails->parent_service_name)?$serviceDetails->parent_service_name:'N/A' }}</span></div>
+                            {{-- {{$serviceDetails->subservices}} --}}
+                            <div><span>{{__('messages.status')}}: {{ $serviceDetails->status }}</span></div>
+                            <div><span>{{__('messages.registered on')}}: {{ $serviceDetails->created_at }}</span></div>
+                            {{-- model --}}
+                            <div class="modal fade" id="exampleModal{{ $serviceDetails->id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">{{ __('messages.add packages') }}</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ route('store.packages') }}" method="post" class="socialformEdit" id="meetingComment">
+                                                @csrf
+                                                {{-- <input type='hidden' name='job_id' id="job" value="{{ $serviceDetails->id }}"> --}}
+                                                <input type='hidden' name='service_id' id="service_id" value="{{ $serviceDetails->id }}">
+                                                <div class="form-group row">
+                                                    <label for="packages" class="col-md-4 col-form-label text-md-right">{{ __('messages.packages') }} <span class="text-danger"> * </span></label>
+                                                    <div class="col-md-6">
+                                                        <input id="packages" type="text" class="form-control @error('packages') is-invalid @enderror" name="packages" value="{{ old('packages') }}"  required autocomplete="packages" autofocus>
+                                                        @error('packages')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group row">
+                                                    <label for="description" class="col-md-4 col-form-label text-md-right">{{ __('messages.description') }}</label>
+                                                    <div class="col-md-6">
+                                                        <textarea id="description" class="form-control @error('description') is-invalid @enderror" name="description" value="{{ old('description') }}" autocomplete="description" autofocus></textarea>
+                                                        @error('description')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group row">
+                                                    <label for="validity" class="col-md-4 col-form-label text-md-right">{{ __('messages.validity') }}</label>
+                                                    <div class="col-md-6">
+                                                        <div class="row" id="dynamic_field">
+                                                            <div class="col-md-10">
+                                                                <select class="form-control" name="validity" id="validity">
+                                                                    <option value="">-select-</option>
+                                                                    <option value="3 months">3 Months</option>
+                                                                    <option value="6 months">6 Months</option>
+                                                                    <option value="1 year">1 Year</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        @error('validity')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group row">
+                                                    <label for="amount" class="col-md-4 col-form-label text-md-right">{{ __('messages.amount') }} <span class="text-danger"> * </span></label>
+                                                    <div class="col-md-6">
+                                                        <input id="amount" type="text" class="form-control @error('amount') is-invalid @enderror" name="amount" value="{{ old('amount') }}"  required autocomplete="amount" autofocus>
+                                                        @error('amount')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group row">
+                                                    <label for="offer_price" class="col-md-4 col-form-label text-md-right">{{ __('messages.offer price') }}</label>
+                                                    <div class="col-md-6">
+                                                        <input id="offer_price" type="text" class="form-control @error('offer_price') is-invalid @enderror" name="offer_price" value="{{ old('offer_price') }}"   autocomplete="offer_price" autofocus>
+                                                        @error('offer_price')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {{--end model--}}
+                            {{-- <div class="form-group row">
+                                <label for="cost" class="col-md-4 col-form-label text-md-right">{{ __('messages.choose package') }}:</label>
+                                <div class="col-xs-8 col-sm-8 col-md-8">
+                                    <form class="forms-sample" action="{{ route('update.packages',$serviceDetails->id) }}" method="post" enctype="multipart/form-data">
+                                        @csrf
+                                        <ul>
+                                            @foreach ($packages as $packages_row)
+                                            <li><input type="radio" id="{{ $packages_row->packages }}" name="packages" value="{{ $packages_row->id }}"
+                                                {{($serviceDetails->package_id==$packages_row->id)?'selected':''}}>
+                                                <label for="{{ $packages_row->packages }}">{{ $packages_row->packages }}
+                                                    ({{ $packages_row->amount }})
+                                                </label></li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6 offset-md-4">
+                                            <button type="submit" class="btn btn-primary">
+                                                {{ __('Save') }}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div> --}}
+                            </div>
+                        </div>
+                    </div>
+                </div><br><br>
+                <div class="preview col-md-12">
+                    <div class="preview col-md-12">
+                        <h6> <b>{{ __('messages.packages') }}</b></h6>
+                        <div class="preview-pic tab-content">
+                            <div class="table-responsive">
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-sm addpackage text-success" data-id="{{ $serviceDetails->id }}" data-toggle="modal" data-target="#exampleModal{{ $serviceDetails->id }}"><i class="fa fa-telegram"></i><b>{{ __('messages.add packages') }}</b></button>
+                                </div>
+                                <table class="table table-condensed table-hover">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{__('messages.packages')}}</th>
+                                                <th>{{__('messages.description')}}</th>
+                                                <th>{{__('messages.validity')}}</th>
+                                                <th>{{__('messages.amount')}}</th>
+                                                <th>{{__('messages.offer price')}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $SL = 1 @endphp
+                                            @forelse ($packages as $packages_Row)
+                                            <tr>
+                                                <td>{{ $SL++ }}</td>
+                                                <td>{{ $packages_Row->packages }}</td>
+                                                <td>{{ $packages_Row->description }}</td>
+                                                <td>{{ $packages_Row->validity }}</td>
+                                                <td>{{ $packages_Row->amount }}</td>
+                                                <td>{{ $packages_Row->offer_price }}</td>
+                                            </tr>
+                                            @empty
+                                            <tr>
+                                                <td colspan="7" class="text-danger text-center">No records found</td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><br><br>
+                <div class="preview col-md-12">
+                    <div class="preview col-md-12">
+                        <div class="modal fade" id="examplesubserviceModal{{ $serviceDetails->id }}" tabindex="-1" role="dialog" aria-labelledby="examplesubserviceModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="examplesubserviceModalLabel">{{ __('messages.add packages') }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="{{ route('sub_services.store') }}" method="post" class="socialformEdit" id="subservice">
+                                            @csrf
+                                            <input type='hidden' name='service_id' id="service_id" value="{{ $serviceDetails->id }}">
+                                            <div class="form-group row">
+                                                <div class="col-xs-8 col-sm-8 col-md-8">
+                                                    <div class="form-group">
+                                                        <strong>{{ __('messages.name in english') }}</strong>
+                                                        <input type='hidden' name="language"  value="1">
+                                                        <input type="text" name="service_name_english" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="col-xs-8 col-sm-8 col-md-8">
+                                                    <div class="form-group">
+                                                        <strong>{{ __('messages.name in arabic') }}</strong>
+                                                        <input type='hidden' name="language"  value="2">
+                                                        <input type="text" name="service_name_arabic" class="form-control">
+                                                    </div>
+                                                </div>
+                                                <div class="col-xs-8 col-sm-8 col-md-8">
+                                                    <div class="form-group">
+                                                        <strong>{{ __('messages.name in hindi') }}</strong> 
+                                                        <input type='hidden' name="language"  value="3">
+                                                        <input type="text" name="service_name_hindi" class="form-control">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group row">
+                                                    <div class="col-xs-8 col-sm-8 col-md-8">
+                                                        <div class="form-group">
+                                                            <strong> {{ __('messages.image') }} </strong><span class="text-danger">(Max Image dimension width:50 x height:50 pixel, Max: 1MB)</span>
+                                                            <input type="file" name="image" value="" class="form-control">
+                                                        </div>
+                                                    </div>
+                                                    {{-- <div class="col-xs-8 col-sm-8 col-md-8">
+                                                        <strong>{{ __('messages.service') }} {{ __('messages.available countries') }}</strong>
+                                                        <div id="country_selected">
+                                                        </div>
+                                                        <div id="country_selected_list" style="color: #17a2b8">
+                                                            @if (!empty(old('service_countries')) && old('service_countries.0') != '')
+                                                            @foreach (old('service_countries') as $key => $value)
+                                                            <div class="country_added">{{ old('service_countries.' . $key) }}<input type="hidden" name="service_countries[]" value="{{ old('service_countries.' . $key) }}" /><a href="javascript:void(0)" class="remove_country remove_country_db" data-id="{{ $value }}"><i class="fas fa-times-circle"></i></a></div>
+                                                            @endforeach
+                                                            @endif
+                                                        </div>
+                                                        
+                                                        <input name="" class="form-control" id="countries" placeholder="Choose country" type="text" value="{{ old('service_countries') }}" autocomplete="off" />
+                                                        <div id="setting_country">
+                                                        </div>
+                                                    </div> --}}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h6> <b>{{ __('messages.sub service') }}</b></h6>
+                        <div class="preview-pic tab-content">
+                            <div class="table-responsive">
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-sm subservice text-success" data-id="{{ $serviceDetails->id }}" data-toggle="modal" data-target="#examplesubserviceModal{{ $serviceDetails->id }}"><i class="fa fa-telegram"></i><b>{{ __('messages.add sub service') }}</b></button>
+                                </div>
+                                <table class="table table-condensed table-hover">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{__('messages.name in english')}}</th>
+                                                <th>{{__('messages.image')}}</th>
+                                                <th>{{__('messages.status')}}</th>
+                                                <th class="action-icon">{{__('messages.action')}}</th>
+                                                
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                // $count = 0;
+                                                @endphp
+                                                @php $SL = 1 @endphp
+                                                @forelse ($services as $row)
+                                                {{-- @php dd($services) @endphp --}}
+                                                <tr>
+                                                    {{-- <td>#<td> --}}
+                                                        {{-- <td>{{ ($services->currentpage() - 1) * $services->perpage() + $count + 1 }}</td> --}}
+                                                        <td>{{ $SL++ }}</td>
+                                                        <td>{{ $row->service_name }}</td>
+                                                        <td class="list-table-main-image">
+                                                            @if ($row->image != '')
+                                                            <img src="{{ asset('/assets/uploads/service/' . $row->image) }}" alt="{{ $row->service }}">
+                                                            @else
+                                                            <img src="{{ asset('img/no-image.jpg') }}" alt="profile image" />
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $row->status }}</td>
+                                                        <td>
+                                                            @if ($row->status != 'deleted')
+                                                            <form action="{{ route('services.destroy', $row->id) }}" method="POST">
+                                                                @csrf
+                                                                <a href="{{ route('services.view', $row->id) }}" class="btn btn-warning btn-circle btn-md"><i class="fas fa-eye"></i></a>
+                                                                
+                                                                <a href="{{ route('services.edit', $row->id) }}" class="btn btn-warning btn-circle btn-md"><i class="fas fa-pen"></i></a>
+                                                                <button type="submit" class="btn btn-danger btn-circle btn-md" onclick="return confirm('Do you really want to delete?')"><i class="fas fa-trash"></i></button>
+                                                            </form>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                    {{-- @php
+                                                        $count++;
+                                                        @endphp --}}
+                                                        @empty
+                                                        <tr>
+                                                            <td colspan="7" class="text-danger text-center">No records found</td>
+                                                        </tr>
+                                                        @endforelse
+                                                    </tbody>
+                                                </table>
+                                                {{-- {{ $services->links('pagination::bootstrap-4') }} --}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><br><br>
+                                <div class="preview col-md-12">
+                                    <div class="preview col-md-12">
+                                        <h6> <b>{{ __('Documents') }}</b></h6>
+                                        <div class="preview-pic tab-content">
+                                            <div class="table-responsive">
+                                                <div class="text-right">
+                                                    <button type="button" class="btn btn-sm add_document text-success" data-id="{{ $serviceDetails->id }}" data-toggle="modal" data-target="#exampledocumentModal{{ $serviceDetails->id }}"><i class="fa fa-telegram"></i><b>{{ __('messages.add document') }}</b></button>
+                                                </div>
+                                                <table class="table table-condensed table-hover">
+                                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>{{__('messages.add document')}}</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @php $SL = 1 @endphp
+                                                            @forelse ($documents as $documents_Row)
+                                                            <tr>
+                                                                <td>{{ $SL++ }}</td>
+                                                                <td>{{ $documents_Row->document }}</td>
+                                                            </tr>
+                                                            @empty
+                                                            <tr>
+                                                                <td colspan="7" class="text-danger text-center">No records found</td>
+                                                            </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><br><br>
+                                {{-- model --}}
+                                <div class="modal fade" id="exampledocumentModal{{ $serviceDetails->id }}" tabindex="-1" role="dialog" aria-labelledby="exampledocumentModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampledocumentModalLabel">{{ __('messages.add packages') }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="{{ route('store.document') }}" method="post" class="socialformEdit" id="meetingComment">
+                                                    @csrf
+                                                    <input type='hidden' name='service_id' id="service_id" value="{{ $serviceDetails->id }}">
+                                                    <div class="form-group row">
+                                                        <label for="document" class="col-md-4 col-form-label text-md-right">{{ __('messages.add document') }} <span class="text-danger"> * </span></label>
+                                                        <div class="col-md-6">
+                                                            <input id="document" type="text" class="form-control @error('document') is-invalid @enderror" name="document" value="{{ old('document') }}"  required autocomplete="document" autofocus>
+                                                            @error('document')
+                                                            <span class="invalid-feedback" role="alert">
+                                                                <strong>{{ $message }}</strong>
+                                                            </span>
+                                                            @enderror
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+@section('footer_scripts')
+{{-- <script type="text/javascript">
+    $(document).on("click", ".service_items", function() {
+        var service = $(this).attr("data_item");
+        $('.active').removeClass("active");
+        $(this).addClass("active");
+        $("#selected_service").val(service);
+    });
+    
+    var country_array = [];
+    
+    function select_country(id, name) {
+        var allow = true;
+        
+        country_array = $("input[name='service_countries[]']")
+        .map(function() {
+            return $(this).val();
+        }).get();
+        
+        $('.country_added').each(function() {
+            
+            if (name == $(this).text()) {
+                allow = false;
+            }
+        });
+        if (!allow) {
+            
+            alert('This Country already exist. Please choose other.');
+            
+        } else {
+            country_array.push(name);
+            
+            var html_content = '<div class="country_added">' + name + '<input type="hidden" name="service_countries_name[]" value="' + name + '" /><input type="hidden" name="service_countries[]" value="' + id + '" /><a href="javascript:void(0)" class="remove_country remove_country_db" data-id="' + id + '"><i class="fas fa-times-circle"></i></a></div>';
+            $("#country_selected_list").append(html_content);
+            $('#country_selected').hide();
+            
+            // SaveDistrict(name);
+        }
+    }
+    
+    $(document).ready(function() {
+        
+        $(document).on('keyup', '#countries', function() {
+            var query = $(this).val();
+            
+            
+            if (query != '') {
+                $.ajax({
+                    url: "{{ route('countries.search') }}",
+                    type: "GET",
+                    data: {
+                        'country': query
+                    },
+                    success: function(data) {
+                        $('#setting_country').show();
+                        $('#setting_country').html(data);
+                    }
+                })
+            } else {
+                $('#setting_country').hide();
+            }
+            
+        });
+        
+        $(document).on("click", ".remove_country", function() {
+            $(this).parents('.country_added').remove();
+        });
+    });
+</script>
+<style>
+    .active {   
+        color: #FF0000;
+    }
+</style> --}}
+<script>
+    $(document).on('click', '.addpackage', function() {
+        var service_id = $(this).attr('data-id');
+        $('#service').val(service_id);
+    });
+    $(document).on('click', '.subservice', function() {
+        var service_id = $(this).attr('data-id');
+        $('#service').val(service_id);
+    });
+    $(document).on('click', '.add_document', function() {
+        var service_id = $(this).attr('data-id');
+        $('#service').val(service_id);
+    });
+</script>
+@endsection

@@ -1,0 +1,232 @@
+@extends('layouts.admin.index')
+
+@section('content')
+
+@if (count($errors) > 0)
+<div class="alert alert-danger">
+    <strong>{{ _('messages.Whoops') }}!</strong> {{ _('messages.There were some problems with your input') }}.<br><br>
+    <ul>
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
+@if (session('success'))
+<div class="alert alert-success">
+    <ul>
+        <li>{{ session('success') }}</li>
+    </ul>
+</div>
+@endif
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">{{__('messages.update')}}</h1>
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <a class="btn btn-primary btn-circle btn-lg" href="{{ route('admin.services') }}" title="{{ __('messages.Back to Listings') }}"> <i class="fa fa-arrow-left" aria-hidden="true"></i></a>
+            <form method="post" action="" enctype="multipart/form-data">
+                @csrf
+                <div class="row">
+                    {{-- @php dd($services);@endphp --}}
+                    {{-- <div class="col-xs-8 col-sm-8 col-md-8">
+                        <div class="form-group">
+                            <strong>{{__('messages.title')}}:</strong>
+                            <input type="text" name="service" value="{{ $services->service }}" class="form-control" required />
+                        </div>
+                    </div> --}}
+                    <div class="col-xs-8 col-sm-8 col-md-8">
+                        <div class="form-group">
+                            <strong>{{ __('messages.name in english') }}</strong>
+                            <input type='hidden' name="language"  value="1">
+                            <input type="text" name="service_name_english" value="{{ $services->service_name }}" class="form-control">
+                            {{-- @php dd($services);@endphp --}}
+                        </div>
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8">
+                        <div class="form-group">
+                            <strong>{{ __('messages.name in arabic') }}</strong>
+                            <input type='hidden' name="language"  value="2">
+                            <input type="text" name="service_name_arabic"  value="{{ $services->service_name }}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8">
+                        <div class="form-group">
+                            <strong>{{ __('messages.name in hindi') }}</strong> 
+                            <input type='hidden' name="language"  value="3">
+                            <input type="text" name="service_name_hindi" value="{{ $services->service_name }}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8">
+                        <div class="form-group">
+                            <div class="card-header">{{__('messages.parent service')}}</div>
+                            <div class="card-body category-list-block">
+                                <ul>
+                                    <li><a href="javascript:void(0)" id="category" data_item="0" class="service_items @if ($services->parent_id == 0) {{ 'active' }} @endif">Parent</a></li>
+                                </ul>
+                                @foreach ($parentServices as $service)
+                                <ul>
+                                    <li>
+                                        @if($service->id!=$services->id)
+                                        <a href="javascript:void(0)" id="category" data_item="{{ $service->id }}" class="service_items @if ($service->id == $services->parent_id) {{ 'active' }} @endif">{{ $service->service }}</a>
+                                        @endif
+                                        @if (count($service->subservices))
+                                        @include('admin.services.subServiceListEdit',['subservices' => $service->subservices])
+                                        @endif
+                                    </li>
+                                </ul>
+                                @endforeach
+                                <input type="hidden" name="selected_service" value="{{ $services->parent_id }}" id="selected_service">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8">
+                        <div id="image-block">
+                            @if ($services->image != '')
+                            <img src="{{ asset('/assets/uploads/service/') }}/{{ $services->image }}" alt="{{ $services->image }}" width="50px" />
+                            <a href="javascript:void(0)" onclick="removeImage({{ $services->id }})" class="btn btn-danger btn-circle btn-md"><i class="far fa-times-circle"></i></a>
+                            @endif
+                        </div>
+                        <div class="form-group">
+                            <strong>{{__('messages.image')}}:</strong><span class="text-danger">(Max Image dimension width:50 x height:50 pixel, Max: 1MB)</span>
+                            <input id="profile_pic" type="File" class="course-img" name="image">
+                        </div>
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8">
+                        <strong>{{__('messages.service')}} {{__('messages.available countries')}}</strong>
+                        <div class="login-input rel_selected">
+                            <div id="country_selected">
+                            </div>
+                            <div id="country_selected_list" style="color: #17a2b8">
+                                @if ((!empty(old('service_countries')) && old('service_countries.0') != '') || $errors->any())
+                                @if (!empty(old('service_countries')))
+                                @foreach (old('service_countries') as $key => $value)
+                                <div class="country_added">{{ old('service_countries_name.' . $key) }}<input type="hidden" name="service_countries_name[]" value="{{ old('service_countries_name.' . $key) }}" /><input type="hidden" name="service_countries[]" value="{{ $value }}" /><a href="javascript:void(0)" class="remove_country remove_country_db"><i class="fas fa-times-circle"></i></a></div>
+                                @endforeach
+                                @endif
+                                @elseif (isset($arr_countries))
+                                @foreach ($arr_countries as $country_row)
+                                <div id="religion_selected">
+                                    <div class="country_added" style="color: #17a2b8">{{ $country_row->name }}<input type="hidden" name="service_countries_name[]" value="{{ $country_row->name }}" /><input type="hidden" name="service_countries[]" value="{{ $country_row->id }}"><a href="javascript:void(0)" class="remove_country remove_country_db" data-id="{{ $country_row->id }}"><i class="fas fa-times-circle"></i></a></div>
+                                </div>
+                                @endforeach
+                                @endif
+                            </div>
+                            <input name="" class="form-control" id="countries" placeholder="Service Countries" type="text" value="{{ old('service_countries') }}" autocomplete="off" />
+                        </div>
+                        <div id="setting_country">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-8 col-md-8">
+                    <div class="form-group">
+                        <input type="submit" value="{{__('messages.update')}}" class="btn btn-primary">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+</div>
+@endsection
+@section('footer_scripts')
+
+<script type="text/javascript">
+    $(document).on("click", ".service_items", function() {
+        var service = $(this).attr("data_item");
+        $('.active').removeClass("active");
+        $(this).addClass("active");
+        $("#selected_service").val(service);
+    });
+    
+    function removeImage(id = null){
+        if(confirm('Do you want to remove image?')){
+            if(id != null){
+                $.ajax({
+                    type:'POST',
+                    url:'{{ route("services.removeImage") }}',
+                    data:{id: id, '_token':'{{csrf_token()}}'},
+                    success:function(response){
+                        if(response.result){
+                            $('#image-block').parent().prepend('<span class="text-success" id="alert_image">Category image removed successfully.</span>');
+                            $('#alert_image').delay(2000).fadeOut();
+                            $('#image-block').remove();
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            } else {
+                alert('Image remove failed. Something went wrong.');
+            }
+        }
+    }
+    
+    function select_country(id, name) {
+        var allow = true;
+        
+        country_array = $("input[name='service_countries[]']")
+        .map(function() {
+            return $(this).val();
+        }).get();
+        
+        $('.country_added').each(function() {
+            
+            if (name == $(this).text()) {
+                allow = false;
+            }
+        });
+        if (!allow) {
+            
+            alert('This Country already exist. Please choose other.');
+            
+        } else {
+            country_array.push(name);
+            
+            var html_content = '<div class="country_added">' + name + '<input type="hidden" name="service_countries_name[]" value="' + name + '" /><input type="hidden" name="service_countries[]" value="' + id + '" /><a href="javascript:void(0)" class="remove_country remove_country_db" data-id="' + id + '"><i class="fas fa-times-circle"></i></a></div>';
+            $("#country_selected_list").append(html_content);
+            $('#country_selected').hide();
+            
+            // SaveDistrict(name);
+        }
+    }
+    
+    $(document).ready(function() {
+        
+        $(document).on('keyup', '#countries', function() {
+            var query = $(this).val();
+            
+            
+            if (query != '') {
+                $.ajax({
+                    url: "{{ route('countries.search') }}",
+                    type: "GET",
+                    data: {
+                        'country': query
+                    },
+                    success: function(data) {
+                        $('#setting_country').show();
+                        $('#setting_country').html(data);
+                    }
+                })
+            } else {
+                $('#setting_country').hide();
+            }
+            
+        });
+        
+        $(document).on("click", ".remove_country", function() {
+            $(this).parents('.country_added').remove();
+        });
+        
+    });
+</script>
+
+<style>
+    .active {
+        color: #FF0000;
+    }
+    
+</style>
+@endsection

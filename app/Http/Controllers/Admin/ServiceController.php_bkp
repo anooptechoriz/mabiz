@@ -1,0 +1,442 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Country;
+use App\Models\Document;
+use App\Models\Language;
+use App\Models\Package;
+use App\Models\Service;
+use App\Models\ServiceLanguages;
+use DB;
+use Illuminate\Http\Request;
+
+class ServiceController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth:admin');
+    }
+    public function index(Request $request)
+    {
+        $services = Service::select('services.*','service_languages.service_name as service','parent_service_languages.service_name as parent_service_name')
+            ->leftjoin('services as parent_services', 'parent_services.id', '=', 'services.parent_id')
+            ->leftjoin('service_languages', function ($join) {
+                $join->on('service_languages.service_id', '=', 'services.id');
+                $join->where('service_languages.language_id', '=', 1);
+            })
+            ->leftjoin('service_languages as parent_service_languages', function ($join) {
+                $join->on('parent_service_languages.service_id', '=', 'parent_services.id');
+                $join->where('parent_service_languages.language_id', '=', 1);
+            });
+
+        if ($request->has('search_keyword') && $request->has('search_keyword') != '') {
+            $services->where('services.service', 'LIKE', '%' . $request->search_keyword . '%');
+        }
+
+        $services = $services->where('services.status', 'active')->orderBy('services.service', 'ASC')->distinct()->paginate(30)->appends(request()->except('page'));
+        // dd($services);
+        return view('admin.services.index', compact('services'))->with('i', ($request->input('page', 1) - 1) * 30);
+    }
+
+    public function create()
+    {
+        // $parentservices = Service::where('status', 'active')->where('parent_id', 0)->get();
+
+
+        $parentservices = Service::select('services.*','service_languages.service_name as service','parent_service_languages.service_name as parent_service_name')
+        ->leftjoin('services as parent_services', 'parent_services.id', '=', 'services.parent_id')
+        ->leftjoin('service_languages', function ($join) {
+            $join->on('service_languages.service_id', '=', 'services.id');
+            $join->where('service_languages.language_id', '=', 1);
+        })
+        ->leftjoin('service_languages as parent_service_languages', function ($join) {
+            $join->on('parent_service_languages.service_id', '=', 'parent_services.id');
+            $join->where('parent_service_languages.language_id', '=', 1);
+        })
+        ->where('services.parent_id', 0)->where('services.status', 'active')->orderBy('services.service', 'ASC')->distinct()->get();
+        // dd($parentservices);
+        $countries = Country::all();
+        return view('admin.services.create', compact('parentservices', 'countries'));
+    }
+
+    public function store(Request $request)
+    {
+
+        $this->validate($request, [
+            // 'service' => 'required|unique:services,service',
+            'service_countries.*' => 'required',
+            'service_name.*' => 'required',
+        ]);
+
+        $file = $request->file('image');
+        $fileName = '';
+        if ($file) {
+
+            $this->validate($request, [
+                'image' => 'required|mimes:jpeg,png,svg|max:2048',
+
+                // 'image' => 'mimes:jpeg,jpg,png,svg|max:1048|dimensions:max_width=50,max_height=50',
+            ]);
+            // dd($request->all());
+
+            $fileName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('/assets/uploads/service/'), $fileName);
+        }
+
+        $parent_id = 0;
+        if ($request->selected_service) {
+            $parent_id = $request->selected_service;
+        }
+        $country_id = (isset($request->service_countries)) ? $request->service_countries : array();
+
+        $updated_country_ids = implode(',', $country_id);
+
+        $serviceID = Service::create([
+            'service' => $request->service,
+            'country_ids' => $updated_country_ids,
+            'parent_id' => $parent_id,
+            'image' => $fileName,
+        ])->id;
+        if ($request->service_name_english != '') {
+            $language = Language::where('shortcode', 'en')->first();
+            $servicelanguage = ServiceLanguages::create([
+                'service_id' => $serviceID,
+                'language_id' => $language->id,
+                'service_name' => $request->service_name_english,
+            ]);
+        }
+        if ($request->service_name_arabic != '') {
+            $language = Language::where('shortcode', 'ar')->first();
+            $servicelanguage = ServiceLanguages::create([
+                'service_id' => $serviceID,
+                'language_id' => $language->id,
+                'service_name' => $request->service_name_arabic,
+            ]);
+        }
+        if ($request->service_name_hindi != '') {
+            $language = Language::where('shortcode', 'hi')->first();
+            $servicelanguage = ServiceLanguages::create([
+                'service_id' => $serviceID,
+                'language_id' => $language->id,
+                'service_name' => $request->service_name_hindi,
+            ]);
+        }
+        // dd($servicelanguage);
+        if ($serviceID) {
+            return redirect()->route('admin.services')->with('success', 'Service entered successfully');
+        } else {
+            return redirect()->route('admin.services')->with('error', 'Something went wrong Service add failed');
+
+        }
+    }
+
+    public function show($id)
+    {
+        $packages = Package::where('service_id', $id)->get();
+        $documents = Document::where('service_id', $id)->get();
+
+        $parentServices = Service::
+        where('status', 'active')->where('parent_id', 0)->get();
+        // $services = Service::where('parent_id', $id)->get();
+
+
+        $services = Service::select('services.*','service_languages.service_name as service','parent_service_languages.service_name as parent_service_name')
+        ->leftjoin('services as parent_services', 'parent_services.id', '=', 'services.parent_id')
+        ->leftjoin('service_languages', function ($join) {
+            $join->on('service_languages.service_id', '=', 'services.id');
+            $join->where('service_languages.language_id', '=', 1);
+        })
+        ->leftjoin('service_languages as parent_service_languages', function ($join) {
+            $join->on('parent_service_languages.service_id', '=', 'parent_services.id');
+            $join->where('parent_service_languages.language_id', '=', 1);
+        })
+        ->where('services.parent_id', $id)->where('services.status', 'active')->orderBy('services.service', 'ASC')->distinct()->paginate(30)->appends(request()->except('page'));
+        // dd($parentServices);
+
+        if ($id) {
+            // $serviceDetails = Service::select('services.*', 'parent.service as parent_service_name')
+            //     ->leftjoin('services as parent', 'parent.id', 'services.parent_id')
+            //     ->where('services.id', $id)->first();
+            $serviceDetails = Service::select('services.*','service_languages.service_name as service','parent_service_languages.service_name as parent_service_name')
+            ->leftjoin('services as parent_services', 'parent_services.id', '=', 'services.parent_id')
+            ->leftjoin('service_languages', function ($join) {
+                $join->on('service_languages.service_id', '=', 'services.id');
+                $join->where('service_languages.language_id', '=', 1);
+            })
+            ->leftjoin('service_languages as parent_service_languages', function ($join) {
+                $join->on('parent_service_languages.service_id', '=', 'parent_services.id');
+                $join->where('parent_service_languages.language_id', '=', 1);
+            })->where('services.id', $id)->first();
+
+            return view('admin.services.show', compact('serviceDetails', 'packages', 'services', 'parentServices', 'documents'));
+
+        }
+    }
+
+    public function edit($id = null)
+    {
+        $servicelanguages = ServiceLanguages::select('service_languages.*', 'languages.shortcode')->where('service_id', $id)
+            ->join('languages', 'languages.id', 'service_languages.language_id')->get();
+        // dd($servicelanguages);
+        $services = Service::find($id);
+
+        if ($services) {
+            if ($services->status == 'active') {
+                $parentServices = Service::where('status', 'active')->where('parent_id', 0)->get();
+                // dd($parentServices);
+                $pre_countries = $services->country_ids;
+
+                if ($pre_countries) {
+                    if ($pre_countries != '') {
+                        $arr_country = explode(",", $pre_countries);
+                        $arr_countries = Country::whereIn('id', $arr_country)->get();
+
+                    }
+                } else {
+                    $arr_countries = array();
+                }
+                return view('admin.services.edit', compact('services', 'parentServices', 'arr_countries', 'servicelanguages'));
+            } else {
+                return redirect()->back()->withErrors('Cannot edit this service. Not able to edit deleted category.');
+            }
+        } else {
+            return redirect()->back()->withErrors('Cannot edit this service. Category details not found.');
+        }
+    }
+
+    public function update(Request $request, $id = null)
+    {
+        $servicelanguage = ServiceLanguages::where('service_id', $id)->get();
+        $serviceDetails = Service::find($id);
+        if ($serviceDetails) {
+            $file = $request->file('image');
+            $country_id = (isset($request->service_countries)) ? $request->service_countries : array();
+            $updated_country_ids = implode(',', $country_id);
+            if ($file) {
+                $this->validate($request, [
+                    'image' => 'required|mimes:jpeg,jpg,png,svg|max:1048|dimensions:max_width=50,max_height=50',
+                    // 'service' => 'required|unique:services,service,' . $id,
+                ]);
+                if ($serviceDetails->image != '') {
+                    $imagefile = public_path('/assets/uploads/service/') . '/' . $serviceDetails->image;
+                    File::delete($imagefile);
+                }
+                $fileName = time() . '.' . $request->image->extension();
+                $request->image->move(public_path('/assets/uploads/service/'), $fileName);
+                $serviceID = Service::find($id)->update([
+                    'image' => $fileName,
+                    'parent_id' => $request->selected_service,
+                    'service' => $request->name,
+                    'country_ids' => $updated_country_ids,
+
+                ]);
+            } else {
+                // $this->validate($request, [
+                //     'service' => 'required|unique:services,service,' . $id,
+                // ]);
+                $serviceID = Service::find($id)->update([
+                    'parent_id' => $request->selected_service,
+                    'service' => $request->service,
+                    'country_ids' => $updated_country_ids,
+                ]);
+            }
+            if ($request->service_name_english != '') {
+                $language = Language::where('shortcode', 'en')->first();
+                ServiceLanguages::where('service_id', $id)->update([
+                    'service_id' => $serviceID,
+                    'language_id' => $language->id,
+                    'service_name' => $request->service_name_english,
+                ]);
+            }
+            if ($request->service_name_arabic != '') {
+                $language = Language::where('shortcode', 'ar')->first();
+                ServiceLanguages::where('service_id', $id)->update([
+                    'service_id' => $serviceID,
+                    'language_id' => $language->id,
+                    'service_name' => $request->service_name_arabic,
+                ]);
+
+            }
+            if ($request->service_name_hindi != '') {
+                $language = Language::where('shortcode', 'hi')->first();
+                ServiceLanguages::where('service_id', $id)->update([
+                    'service_id' => $serviceID,
+                    'language_id' => $language->id,
+                    'service_name' => $request->service_name_hindi,
+                ]);
+            }
+            // dd($serviceDetails);
+            return redirect()->route('admin.services')->with('success', 'Service updated successfully');
+        } else {
+            return redirect()->back()->withErrors('Sorry.. Update failed. services details not found.');
+        }
+    }
+
+    public function destroy($id = null)
+    {
+        $serviceDetails = Service::find($id);
+
+        if ($serviceDetails) {
+            $notDeletable = Service::where('parent_id', $serviceDetails->id)->where('status', 'active')->exists();
+            if (!$notDeletable) {
+                Service::find($id)->update([
+                    'status' => 'deleted',
+                ]);
+                return redirect()->route('admin.services')->with('success', 'Service deleted successfully');
+            } else {
+                return redirect()->back()->withErrors('Delete failed. Cannot delete the Service. Child category found in this Service.');
+            }
+        } else {
+            return redirect()->back()->withErrors('Sorry.. Delete failed. Service details not found.');
+        }
+    }
+
+    public function searchContries(Request $request)
+    {
+        if ($request->ajax()) {
+
+            $data = Country::where('name', 'LIKE', $request->country . '%')->get();
+
+            $output = '';
+            if (count($data) > 0) {
+                $output = '<ul class="list-group">';
+                foreach ($data as $row) {
+                    $output .= '<li class="list-group-item" onclick="select_country(' . $row->id . ',\'' . $row->name . '\')"><span>' . ucfirst($row->name) . '<i class="fa fa-plus"></i></span></li>';
+                }
+                $output .= '</ul>';
+            } else {
+                $output .= '<li class="list-group-item">' . 'No results' . '</li>';
+            }
+            return $output;
+        }
+    }
+    public function country_destroy(Request $request)
+    {
+        if ($request->ajax()) {
+            $country_id = $request->religion_id;
+
+            $religion_castes = Caste::where('religion_id', $religion_id)->get();
+
+            foreach ($religion_castes as $caste) {
+                $removed_castes[] = $caste->id;
+            }
+
+            return ['success' => true, 'removed_castes' => $removed_castes];
+
+        }
+    }
+    public function packages_store(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'packages' => 'required',
+            'amount' => 'required',
+        ]);
+        $package = Package::create([
+            'service_id' => $request->service_id,
+            'packages' => $request->packages,
+            'description' => $request->description,
+            'validity' => $request->validity,
+            'amount' => $request->amount,
+            'offer_price' => $request->offer_price,
+        ]);
+        // dd($package);
+        return back()->with('success', 'Package added successfully');
+    }
+    public function packages_update(Request $request, $service_id)
+    {
+        // dd($service_id);
+        Service::where('id', $service_id)->update([
+            'package_id' => $request->packages,
+        ]);
+        return back()->with('success', 'Package Updated successfully');
+    }
+    // public function sub_services_create()
+    // {
+    //     $parentservices = Service::where('status', 'active')->where('parent_id', 0)->get();
+    //     $countries = Country::all();
+    //     return view('admin.services.create', compact('parentservices', 'countries'));
+    // }
+    public function sub_services_store(Request $request, $id = null)
+    {
+        $this->validate($request, [
+            // 'service' => 'required|unique:services,service',
+            'service_countries.*' => 'required',
+            'service_name.*' => 'required',
+        ]);
+
+        $file = $request->file('image');
+        $fileName = '';
+        if ($file) {
+
+            $this->validate($request, [
+                'image' => 'required|mimes:jpeg,png,svg|max:2048',
+            ]);
+            $fileName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('/assets/uploads/service/'), $fileName);
+        }
+
+        $parent_id = $request->service_id;
+        $parent_service = Service::find($parent_id);
+        if ($request->selected_service) {
+            $parent_id = $request->selected_service;
+        }
+        $country_id = (isset($request->service_countries)) ? $request->service_countries : array();
+
+        $updated_country_ids = implode(',', $country_id);
+
+        $serviceID = Service::create([
+            'country_ids' => $parent_service->country_ids,
+            'parent_id' => $parent_id,
+            'image' => $fileName,
+
+        ])->id;
+        if ($request->service_name_english != '') {
+            $language = Language::where('shortcode', 'en')->first();
+            $servicelanguage = ServiceLanguages::create([
+                'service_id' => $serviceID,
+                'language_id' => $language->id,
+                'service_name' => $request->service_name_english,
+            ]);
+        }
+        if ($request->service_name_arabic != '') {
+            $language = Language::where('shortcode', 'ar')->first();
+            $servicelanguage = ServiceLanguages::create([
+                'service_id' => $serviceID,
+                'language_id' => $language->id,
+                'service_name' => $request->service_name_arabic,
+            ]);
+        }
+        if ($request->service_name_hindi != '') {
+            $language = Language::where('shortcode', 'hi')->first();
+            $servicelanguage = ServiceLanguages::create([
+                'service_id' => $serviceID,
+                'language_id' => $language->id,
+                'service_name' => $request->service_name_hindi,
+            ]);
+        }
+        // dd($request->all());
+        if ($serviceID) {
+            return back()->with('success', 'Service entered successfully');
+        } else {
+            return back()->with('error', 'Something went wrong Service add failed');
+
+        }
+
+    }
+    public function document_store(Request $request)
+    {
+        // dd($request->all());
+        $request->validate([
+            'document' => 'required',
+        ]);
+        $documents = Document::create([
+            'service_id' => $request->service_id,
+            'document' => $request->document,
+        ]);
+        // dd($documents);
+        return back()->with('success', 'Package added successfully');
+    }
+}

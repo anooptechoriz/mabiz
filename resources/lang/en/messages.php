@@ -1,0 +1,115 @@
+<?php
+
+return [
+    "language"=>"Language",
+    "dashboard"=>"Dashboard",
+    "administrators"=>"Administrators",
+    "name"=>"Name",
+    "email"=>"Email",
+    "password"=>"Password",
+    "phone"=>"Phone",
+    "jobtitle"=>"Jobtitle",
+    "bio"=>"Bio",
+    "role"=>"Role",
+    "profile picture"=>"Profile Picture",
+    "create"=>" Create",
+    "select role"=>"Select Role",
+    "roles"=>"Roles",
+    "accounts"=>"Accounts",
+    "permissions"=>"Permissions",
+    "update"=>"Update",
+    "profile"=>"Profile",
+    "logout"=>"Logout",
+    "picture"=>"Picture",
+    "created at"=>"Created At",
+    "action"=>"Action",
+    "slug"=>"Slug",
+    "services"=>"Services",
+    "general settings"=>"General Settings",
+    "submit"=>"Submit",
+    "add permission"=>"Add Permission",
+    "edit permission"=>"Edit Permission",
+    "add role"=>"Add Role",
+    "edit role"=>"Edit Role",
+    "add administrator"=>"Add Administrator",
+    "edit administrator"=>"Edit Administrator",
+    "service"=>"Service",
+    "parent service"=>"Parent Service",
+    "image"=>"Image",
+    "search keyword"=>"Search Keyword",
+    "search"=>"Search",
+    "status"=>"Status",
+    "title"=>"Title",
+    "available countries"=>"Available Countries",
+    "notification email address"=>"Notification Email Address",
+    "company logo"=>"Company Logo",
+    "phone number"=>"Phone Number",
+    "website url"=>"Website URL",
+    "company email address"=>"Company Email Address",
+    "hot line:"=>"Hot Line",
+    "footer logo"=>"Footer Logo",
+    "site currency"=>"Site Currency",
+    "currency icon"=>"Currency Icon",
+    "company address"=>"Company Address",
+    "location map:"=>"Location Map",
+    "whatsapp number:"=>"Whatsapp Number",
+    "phone_number_required"=>"The Phone number required",
+    "country_code_required"=>"The Country code required",
+    "enter_given_otp"=>"Enter given OTP",
+    "otp_generated_successfully"=>"OTP Generated Successfully",
+    "attempt_failed"=>"Attempt failed",
+    "device_not_detect"=>"Device not detect",
+    "country_code_not_exist"=>"Country code is not exist",
+    "success"=>"Success",
+    "successfully"=>"successfully",
+    "updated"=>"Updated",
+    "name_required" =>"The name field is required.",
+    "gender_required" =>"The gender field is required.",
+    "dob_required" => "The dob field is required",
+    "customers"=>"Customers",
+    "country"=>"Country",
+    "region"=>"Region",
+    "date_of_birth"=>"Date of Birth",
+    "gender"=>"Gender",
+    "profile_informations"=>"Profile Informations",
+    "new_password"=>"New Password",
+    "current_password"=>"Current Password",
+    "change_password"=>"Change Password",
+    "confirm_new_password"=>"Confirm new password",
+    "registered on"=>"Registered on",
+    "cancel"=>"Cancel",
+    "no records found"=>"No records found",
+    "parent service"=>"Parent Service",
+    "name in english"=>"Name in English",
+    "name in hindi"=>"Name in Hindi",
+    "name in arabic"=>"Name in Arabic",
+    "packages"=>"Packages",
+    "add packages"=>"Add Packages",
+    "amount"=>"Amount",
+    "choose package"=>"Choose Package",
+    "description"=>"Description",
+    "validity"=>"Validity",
+    "offer price"=>"Offer Price",
+    "sub service"=>"Sub Services",
+    "add sub service"=>"Add Sub Service",
+    "add document"=>"Add Document",
+    "documents"=>"Documents",
+    "cover picture" => "Cover Picture"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ ];
