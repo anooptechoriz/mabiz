@@ -30,7 +30,7 @@ use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-
+use Config;
 class ServiceApiController extends Controller
 {
     private $request;
@@ -108,7 +108,9 @@ class ServiceApiController extends Controller
                             $otp_expiry = date('Y-m-d H:i:s', strtotime('+4 minutes'));
                             $now = date('Y-m-d H:i:s');
                             $late_expiry_date = date('Y-m-d H:i:s', strtotime('-1 days', strtotime(str_replace('/', '-', $now))));
+                            $phone_with_country_code = $country->phonecode . $phone_num;
 
+                             $this->SmsAPI($phone_with_country_code,$otp_number,$langcode);
                             if ($userdetails) {
                                 if ($userdetails->status == 'active') {
 
@@ -172,7 +174,7 @@ class ServiceApiController extends Controller
             $deviceID = $request->header('device-id');
 
             $validator = Validator::make($request->all(), [
-                'phone' => 'required|regex:/[0-9]{9}/',
+                'phone' => 'required|regex:/[0-9]/',
                 'otp' => 'required|digits:6',
                 'countrycode' => 'required',
             ]);
@@ -3164,7 +3166,7 @@ class ServiceApiController extends Controller
                 ]);
 
             }
-            if ($request->payment_status =="success") {
+            if ($request->payment_status == "success") {
                 $order->update([
                     'payment_gateway' => $request->payment_gateway,
                     'payment_status' => 'success',
@@ -3269,6 +3271,46 @@ class ServiceApiController extends Controller
         }
         return response()->json($returnArray);
 
+    }
+
+    public function SmsAPI($phone,$otp,$langcode=NULL)
+    {
+        $url="https://ismartsms.net/RestApi/api/SMS/PostSMS";
+        $now = date('m/d/Y h:m:s');
+        $lang_id=(($langcode=="ar")?'64':'0');
+        $message=($lang_id=='0')?"OTP for Login Transaction on Tuw services is $otp and valid till 4 minutes. Do not share this OTP to anyone for security reasons":
+            "OTP لمعاملة تسجيل الدخول على Tuw services هو $otp وصالحة حتى 4 دقائق. لا تشارك كلمة المرور لمرة واحدة مع أي شخص لأسباب أمنية";
+        $ch = curl_init($url);
+        $ch_headers = array(
+            "content-type: application/json",
+            "Cache-Control: no-cache",
+        );
+
+        $data=[
+            "UserID"=>Config::get('constants.sms.user_id'),
+            "Password"=>Config::get('constants.sms.password'),
+            "Message"=>$message,
+            "Language"=>$lang_id,
+            "ScheddateTime"=>$now,
+            "MobileNo"=>[$phone],
+            "RecipientType"=>"1"
+        ];
+        $data=json_encode($data);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $ch_headers);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $result = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+        if ($err) {
+            echo $err;
+        } else {
+            $fetch_data = json_decode($result, true);
+        }
+        return $fetch_data;
     }
 
 }

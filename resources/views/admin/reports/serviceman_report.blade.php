@@ -46,7 +46,7 @@
                         </div>
                     </div>
                     <div class="col-md-12 export-btn text-end">
-					{{-- <button type="submit" class="btn btn-primary" name="export" value="save">Export</button> --}}
+                        <button type="submit" class="btn btn-primary" name="export" value="save">Export</button>
                     </div>
                 </form>
                 <div class="table-responsive serviceman-table">
