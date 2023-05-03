@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\ChatMessage;
 use App\Models\Country;
+use App\Models\City;
 use App\Models\CouponCode;
 use App\Models\Document;
 use App\Models\Favorite;
@@ -63,7 +64,26 @@ class ServiceApiController extends Controller
             return response()->json(['result' => false, 'message' => 'Attempt failed: Device not detect. Something wrong with device id.']);
         }
     } //
-
+    public function get_regions(Request $request)
+    {
+        if ($request->header('device-id') != '') { 
+            $validator = Validator::make($request->all(), [
+            'country_id' => 'required',
+            ]);
+             if ($validator->fails()) {
+               return response()->json(['result' => false, 'message' => 'Country not Found.']);
+            } else {
+                $regions = City::where('country_id',$request->country_id)->get();
+                if (count($regions) > 0) {
+                    return response()->json(['result' => true, 'message' => 'Successfully', 'regions' => $regions]);
+                } else {
+                    return response()->json(['result' => false, 'message' => 'Sorry.. Cannot find regions list.']);
+                }
+            }
+        } else {
+            return response()->json(['result' => false, 'message' => 'Attempt failed: Device not detect. Something wrong with device id.']);
+        }
+    }
     //----------------Login section with Phone and OTP--
 
     public function request_otp(Request $request)
@@ -1235,8 +1255,9 @@ class ServiceApiController extends Controller
             if ($userDetails) {
                 $img_path = '/assets/uploads/address_image/';
 
-                $user_address = UserAddress::select('user_addresses.*', 'countries.name AS country', DB::raw('CONCAT("' . $img_path . '", image) AS image'))
-                    ->leftjoin('countries', 'user_addresses.country_id', 'countries.id')->where('user_id', $userDetails->id)->get();
+                $user_address = UserAddress::select('user_addresses.id','user_addresses.user_id','user_addresses.address_name','user_addresses.address','user_addresses.country_id','user_addresses.state','user_addresses.home_no','user_addresses.latitude','user_addresses.longitude','user_addresses.created_at', 'countries.name AS country','cities.city_name AS region','cities.id AS region_id', DB::raw('CONCAT("' . $img_path . '", image) AS image'))
+                    ->leftjoin('countries', 'user_addresses.country_id', 'countries.id')
+                    ->leftjoin('cities', 'user_addresses.region', 'cities.id')->where('user_id', $userDetails->id)->get();
                 if (!$user_address) {
                     return response()->json([
                         'errors' => 'Invalid User Address',
@@ -1460,8 +1481,9 @@ class ServiceApiController extends Controller
             if ($userDetails) {
                 $img_path = '/assets/uploads/address_image/';
 
-                $user_address = UserAddress::select('user_addresses.*', 'countries.name AS country', DB::raw('CONCAT("' . $img_path . '", image) AS image'))
-                    ->leftjoin('countries', 'user_addresses.country_id', 'countries.id')->where('user_addresses.id', $request->address_id)
+                $user_address = UserAddress::select('user_addresses.id','user_addresses.user_id','user_addresses.address_name','user_addresses.address','user_addresses.country_id','user_addresses.state','user_addresses.home_no','user_addresses.latitude','user_addresses.longitude','user_addresses.created_at', 'countries.name AS country','cities.city_name AS region','cities.id AS region_id', DB::raw('CONCAT("' . $img_path . '", image) AS image'))
+                    ->leftjoin('countries', 'user_addresses.country_id', 'countries.id')
+                    ->leftjoin('cities', 'user_addresses.region', 'cities.id')->where('user_addresses.id', $request->address_id)
                 // ->where('user_addresses.user_id', $userDetails->id)
                     ->first();
                 if (!$user_address) {

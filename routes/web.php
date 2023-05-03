@@ -51,6 +51,13 @@ Route::group(['middleware' => 'Language'], function () {
     Route::get('/permissions/edit/{id}', [App\Http\Controllers\Admin\PermissionsController::class, 'edit'])->name('permissions.edit');
     Route::post('/permissions/edit/{id}', [App\Http\Controllers\Admin\PermissionsController::class, 'update'])->name('permissions.edit');
     Route::post('/permissions/delete/{id}', [App\Http\Controllers\Admin\PermissionsController::class, 'destroy'])->name('permissions.delete');
+    
+    //------------------Admin/Cities ----------------------------------------
+    
+    Route::get('/admin/cities', [App\Http\Controllers\Admin\CityController::class, 'index'])->name('admin.cities'); 
+    Route::post('/cities/create', [App\Http\Controllers\Admin\CityController::class, 'store'])->name('city.create'); 
+    Route::post('/cities/edit', [App\Http\Controllers\Admin\CityController::class, 'update'])->name('city.edit');
+    Route::post('/cities/delete/{id}', [App\Http\Controllers\Admin\CityController::class, 'destroy'])->name('city.delete');
 
     //------------------Admin/Profile--
     Route::get('/admin/profile', [App\Http\Controllers\Admin\AdminController::class, 'profile'])->name('admin.profile');

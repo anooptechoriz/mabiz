@@ -68,7 +68,7 @@ Route::post('payment-failed', [App\Http\Controllers\FrontApp\ServiceApiControlle
 Route::post('payment-webhook', [App\Http\Controllers\FrontApp\ServiceApiController::class, 'payment_webhook']);
 
 
-
+Route::get('getregions', [App\Http\Controllers\FrontApp\ServiceApiController::class, 'get_regions']);
 
 
 
