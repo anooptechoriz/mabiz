@@ -3298,7 +3298,7 @@ class ServiceApiController extends Controller
     public function SmsAPI($phone,$otp,$langcode=NULL)
     {
         $url="https://ismartsms.net/RestApi/api/SMS/PostSMS";
-        $now = date('m/d/Y h:m:s');
+        $now = date("Y-m-d", strtotime("-1 day"));
         $lang_id=(($langcode=="ar")?'64':'0');
         $message=($lang_id=='0')?"OTP for Login Transaction on Tuw services is $otp and valid till 4 minutes. Do not share this OTP to anyone for security reasons":
             "OTP لمعاملة تسجيل الدخول على Tuw services هو $otp وصالحة حتى 4 دقائق. لا تشارك كلمة المرور لمرة واحدة مع أي شخص لأسباب أمنية";

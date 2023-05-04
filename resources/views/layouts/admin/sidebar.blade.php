@@ -63,6 +63,12 @@
             <span>{{ __('Tax') }}</span>
         </a>
     </li>
+     <li class="nav-item">
+        <a class="nav-link collapsed" href="{{ route('admin.cities') }}">
+            <i class="fas fa-percentage"></i>
+            <span>{{ __('Region') }}</span>
+        </a>
+    </li>
     <li class="nav-item">
         <a class="nav-link collapsed" href="{{ route('admin.order') }}">
             <i class="fas fa-bars"></i>

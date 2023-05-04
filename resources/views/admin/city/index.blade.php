@@ -30,7 +30,7 @@
                              <select name="filter_country_id" id="filter_country_id" class="form-control">
                                     <option value="">Select Country</option>
                                     @foreach ($countries as $key => $row)
-                                    <option value="{{$row->id}}" @php if($row->id == $_GET['filter_country_id']){echo "selected"; }@endphp>{{$row->name}}</option>
+                                    <option value="{{$row->id}}" @php if(isset($_GET['filter_country_id'])&&$row->id == $_GET['filter_country_id']){echo "selected"; }@endphp>{{$row->name}}</option>
                                     @endforeach
                                 </select>
                         </div> 

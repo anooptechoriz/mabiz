@@ -96,6 +96,10 @@
                                     <span class="float-right" text-sm><i class="fa fa-arrow-up"></i></span>
                                 </th>
                                 <th class="text-secondary text-xxs opacity-7">
+                                    <a href="javascript:void(0)" class="dataTable-sorter" data-name="expiry_date">Coupon Code</a>
+                                    <span class="float-right" text-sm><i class="fa fa-arrow-up"></i></span>
+                                </th>
+                                <th class="text-secondary text-xxs opacity-7">
                                     <a href="javascript:void(0)" class="dataTable-sorter" data-name="status">Status</a>
                                     <span class="float-right" text-sm><i class="fa fa-arrow-up"></i></span>
                                 </th>
@@ -112,6 +116,7 @@
                                 <td>{{ $rows->package }}</td>
                                 <td>{{ $rows->subscription_date }}</td>
                                 <td>{{ $rows->expiry_date }}</td>
+                                 <td>{{ $rows->coupon_code }}</td>
                                 <td>{{ $rows->status }}</td>
                                 <td>
                                     <div id="outer_status_{{ $rows->id }}">
